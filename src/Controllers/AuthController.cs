@@ -48,10 +48,26 @@ public class AuthController : ControllerBase
 
 		return Ok(new { message = "Logged in" });
 	}
+
+	[Authorize]
+	[HttpPost("logout")]
+	[EnableRateLimiting("login")]
+	public IActionResult LogOut()
+	{
+		Response.Cookies.Delete("token", new CookieOptions
+		{
+			HttpOnly = true,
+			Secure = true,
+			SameSite = SameSiteMode.Strict
+		});
+		return Ok(new { message = "Logged out" });
+	}
+
 	[Authorize]
 	[HttpGet("verify")]
 	public IActionResult Verify()
 	{
+
 		return Ok(new { message = "Valid" });
 	}
 
