@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
+using BCrypt.Net;
 
 using Auth.src.Models;
 using Microsoft.AspNetCore.RateLimiting;
@@ -17,15 +18,16 @@ namespace Auth.src.Controllers;
 public class AuthController : ControllerBase
 {
 
-	private readonly Admin _admin;
 	private readonly Jwt _jwt;
+	private readonly ConnectionsStrings _connStr;
 
 	public AuthController(
-		IOptions<Admin> admin,
-		IOptions<Jwt> jwt)
+		IOptions<Jwt> jwt,
+		IOptions<ConnectionsStrings> connStr)
 	{
-		_admin = admin.Value;
 		_jwt = jwt.Value;
+		_connStr = connStr.Value;
+		Password.SetConn(_connStr.Default ?? "");
 	}
 
 
@@ -33,9 +35,7 @@ public class AuthController : ControllerBase
 	[EnableRateLimiting("login")]
 	public IActionResult Login([FromBody] LoginRequest request)
 	{
-		// TODO: replace with real user validation (e.g. database lookup)
-		if (!FixedTimeEquals(request.Username, _admin.Username) || !FixedTimeEquals(request.Password, _admin.Password))
-			return Unauthorized(new { message = "Invalid credentials" });
+		if (!Password.Compare(request)) { return NotFound(new { message = "Invalid Credentials" }); }
 
 		var token = GenerateJwtToken(request.Username);
 		Response.Cookies.Append("token", token, new CookieOptions
@@ -67,7 +67,6 @@ public class AuthController : ControllerBase
 	[HttpGet("verify")]
 	public IActionResult Verify()
 	{
-
 		return Ok(new { message = "Valid" });
 	}
 
@@ -94,11 +93,5 @@ public class AuthController : ControllerBase
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
-	private static bool FixedTimeEquals(string? a, string? b)
-	{
-		return CryptographicOperations.FixedTimeEquals(
-			Encoding.UTF8.GetBytes(a ?? ""),
-			Encoding.UTF8.GetBytes(b ?? ""));
-	}
 }
 

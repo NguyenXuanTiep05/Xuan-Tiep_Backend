@@ -7,12 +7,7 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:5203",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-
-        "Jwt__Key": "DevelopmentSecretKey123456789123456789AdminosPindikus",
-
-        "Admin__Username": "admin",
-        "Admin__Password": "password"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "https": {

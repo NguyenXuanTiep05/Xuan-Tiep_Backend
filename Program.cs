@@ -4,12 +4,17 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
 
+if (File.Exists(".env"))
+{
+    DotNetEnv.Env.Load();
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<Admin>(
-    builder.Configuration.GetSection("Admin"));
 builder.Services.Configure<Jwt>(
     builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<ConnectionsStrings>(
+    builder.Configuration.GetSection("ConnectionStrings"));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -69,7 +74,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://xuan-tiep.com", "https://xuan-tiep.com")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // needed for cookies
+              .AllowCredentials();
     });
 });
 
@@ -87,7 +92,6 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
 
 public class Jwt
@@ -98,9 +102,8 @@ public class Jwt
 }
 
 
-public class Admin
+public class ConnectionsStrings
 {
-    public string? Username { get; set; }
-    public string? Password { get; set; }
+    public string? Default { get; set; }
 }
 
