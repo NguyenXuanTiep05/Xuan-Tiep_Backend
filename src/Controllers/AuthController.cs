@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Auth.src.Controllers;
 
 [ApiController]
-[Route("api")]
+[Route("auth")]
 public class AuthController : ControllerBase
 {
 
@@ -35,9 +35,9 @@ public class AuthController : ControllerBase
 	[EnableRateLimiting("login")]
 	public IActionResult Login([FromBody] LoginRequest request)
 	{
-		if (!Password.Compare(request)) { return NotFound(new { message = "Invalid Credentials" }); }
+		if (!Password.Compare(request, out int? id, out string? role)) { return NotFound(new { message = "Invalid Credentials" }); }
 
-		var token = GenerateJwtToken(request.Username);
+		var token = GenerateJwtToken(request.Username, id ?? -1, role!);
 		Response.Cookies.Append("token", token, new CookieOptions
 		{
 			HttpOnly = true,
@@ -70,7 +70,7 @@ public class AuthController : ControllerBase
 		return Ok(new { message = "Valid" });
 	}
 
-	private string GenerateJwtToken(string username)
+	private string GenerateJwtToken(string username, int id, string role)
 	{
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key!));
 		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -78,7 +78,8 @@ public class AuthController : ControllerBase
 		var claims = new[]
 		{
 			new Claim(ClaimTypes.Name, username),
-			new Claim(ClaimTypes.Role, "User"),
+			new Claim(ClaimTypes.Role, role),
+			new Claim(ClaimTypes.NameIdentifier, id.ToString()),
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
 		};
 
