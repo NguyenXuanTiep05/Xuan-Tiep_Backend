@@ -8,11 +8,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using BCrypt.Net;
 
-using Auth.src.Models;
+using Auth.Src.Services;
+using Auth.Src.Models;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace Auth.src.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("auth")]
 public class AuthController : ControllerBase
@@ -30,7 +32,7 @@ public class AuthController : ControllerBase
 		Password.SetConn(_connStr.Default ?? "");
 	}
 
-
+	[AllowAnonymous]
 	[HttpPost("login")]
 	[EnableRateLimiting("login")]
 	public IActionResult Login([FromBody] LoginRequest request)
@@ -49,7 +51,6 @@ public class AuthController : ControllerBase
 		return Ok(new { message = "Logged in" });
 	}
 
-	[Authorize]
 	[HttpPost("logout")]
 	[EnableRateLimiting("login")]
 	public IActionResult LogOut()
@@ -63,7 +64,6 @@ public class AuthController : ControllerBase
 		return Ok(new { message = "Logged out" });
 	}
 
-	[Authorize]
 	[HttpGet("verify")]
 	public IActionResult Verify()
 	{

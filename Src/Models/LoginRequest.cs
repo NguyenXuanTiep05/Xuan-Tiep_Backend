@@ -2,7 +2,7 @@
 
 
 
-namespace Auth.src.Models;
+namespace Auth.Src.Models;
 
 public record LoginRequest
 {
