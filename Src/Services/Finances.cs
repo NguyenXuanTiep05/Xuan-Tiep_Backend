@@ -67,7 +67,8 @@ public static class Finances
 		using var command = new MySqlCommand("""
 				SELECT value, currency, description, date_ FROM finance_income
 				WHERE date_ >= DATE_FORMAT(CURDATE(), '%Y-%m-01')  AND date_ < DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')
-				AND user_id = @userId;
+				AND user_id = @userId
+				ORDER BY date_ DESC;
 		""", connection);
 
 		command.Parameters.AddWithValue("@userId", userId);
@@ -99,7 +100,8 @@ public static class Finances
 		using var command = new MySqlCommand("""
 				SELECT value, currency, description, date_ FROM finance_expenses
 				WHERE date_ >= DATE_FORMAT(CURDATE(), '%Y-%m-01')  AND date_ < DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')
-				AND user_id = @userId;
+				AND user_id = @userId
+				ORDER BY date_ DESC;
 		""", connection);
 
 		command.Parameters.AddWithValue("@userId", userId);
