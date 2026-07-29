@@ -26,7 +26,7 @@ builder.Services.AddRateLimiter(options =>
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 30,
+                PermitLimit = 50,
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }
@@ -35,7 +35,7 @@ builder.Services.AddRateLimiter(options =>
 
     options.AddFixedWindowLimiter("login", opt =>
     {
-        opt.PermitLimit = 5;
+        opt.PermitLimit = 20;
         opt.Window = TimeSpan.FromMinutes(1);
         opt.QueueLimit = 0;
     });
