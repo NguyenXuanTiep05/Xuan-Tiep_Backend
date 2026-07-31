@@ -3,3 +3,8 @@
 /publish
 .env
 .vscode
+
+
+__azurite_db_*__.json
+__azurite_db_*__.blockblob
+.azurite/

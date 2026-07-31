@@ -15,6 +15,11 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
   </ItemGroup>
-
+	<ItemGroup>
+	  <Content Remove="__azurite_db_*__.json" />
+	  <Content Remove="**/__azurite_db_*__.json" />
+	  <None Remove="__azurite_db_*__.json" />
+	  <None Remove="**/__azurite_db_*__.json" />
+	</ItemGroup>
 
 </Project>
