@@ -102,7 +102,7 @@ public class FinanceController : ControllerBase
 
 
 	[HttpPost("create_income")]
-	public async Task<IActionResult> CreateFinanceIncome([FromBody] CreateFinanceIncomeDto request)
+	public async Task<IActionResult> CreateFinanceIncome([FromBody] CreateFinanceRecordDto request)
 	{
 		try
 		{
@@ -116,12 +116,27 @@ public class FinanceController : ControllerBase
 	}
 
 	[HttpPost("create_expense")]
-	public async Task<IActionResult> CreateFinanceExpense([FromBody] CreateFinanceExpenseDto request)
+	public async Task<IActionResult> CreateFinanceExpense([FromBody] CreateFinanceRecordDto request)
 	{
 		try
 		{
 			await Finances.CreateFinanceExpense(_connections.Default!, CurrentUserId, request);
 			return Ok(new { messege = "Expense record has been created" });
+		}
+		catch (MySqlException ex)
+		{
+			return StatusCode(500, new { message = "Database error.", detail = ex.Message });
+		}
+	}
+
+
+	[HttpDelete("del_finance_rec")]
+	public async  Task<IActionResult> DeleteFinanceRecord([FromBody] DeleteFinanceRecordDto request)
+	{
+		try
+		{
+			await Finances.DeleteFinanceRecord(_connections.Default!, CurrentUserId, request);
+			return Ok(new { messege = "Record has been deleted." });
 		}
 		catch (MySqlException ex)
 		{

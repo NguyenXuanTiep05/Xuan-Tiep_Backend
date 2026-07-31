@@ -59,7 +59,7 @@ public static class Finances
 		return results[0];
 	}
 
-	public async static Task<List<FinanceIncomeResponseDto>?> FinanceIncomeAsync(string connectionStr, string userId)
+	public async static Task<List<FinanceRecordResponseDto>?> FinanceIncomeAsync(string connectionStr, string userId)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
@@ -74,11 +74,11 @@ public static class Finances
 		command.Parameters.AddWithValue("@userId", userId);
 
 		using var reader = await command.ExecuteReaderAsync();
-		var results = new List<FinanceIncomeResponseDto>();
+		var results = new List<FinanceRecordResponseDto>();
 
 		while (await reader.ReadAsync())
 		{
-			results.Add(new FinanceIncomeResponseDto
+			results.Add(new FinanceRecordResponseDto
 			{
 				Value = reader.GetDecimal("value"),
 				Currency = reader.GetString("currency"),
@@ -92,7 +92,7 @@ public static class Finances
 		return results;
 
 	}
-	public async static Task<List<FinanceExpensesResponseDto>?> FinanceExpensesAsync(string connectionStr, string userId)
+	public async static Task<List<FinanceRecordResponseDto>?> FinanceExpensesAsync(string connectionStr, string userId)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
@@ -107,11 +107,11 @@ public static class Finances
 		command.Parameters.AddWithValue("@userId", userId);
 
 		using var reader = await command.ExecuteReaderAsync();
-		var results = new List<FinanceExpensesResponseDto>();
+		var results = new List<FinanceRecordResponseDto>();
 
 		while (await reader.ReadAsync())
 		{
-			results.Add(new FinanceExpensesResponseDto
+			results.Add(new FinanceRecordResponseDto
 			{
 				Value = reader.GetDecimal("value"),
 				Currency = reader.GetString("currency"),
@@ -146,7 +146,7 @@ public static class Finances
 
 
 
-	public static async Task CreateFinanceIncome(string connectionStr, string userId, CreateFinanceIncomeDto incomeRequest)
+	public static async Task CreateFinanceIncome(string connectionStr, string userId, CreateFinanceRecordDto incomeRequest)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
@@ -161,7 +161,7 @@ public static class Finances
 
 		await command.ExecuteNonQueryAsync();
 	}
-	public static async Task CreateFinanceExpense(string connectionStr, string userId, CreateFinanceExpenseDto incomeRequest)
+	public static async Task CreateFinanceExpense(string connectionStr, string userId, CreateFinanceRecordDto incomeRequest)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
@@ -178,7 +178,32 @@ public static class Finances
 	}
 
 
+	public static async Task DeleteFinanceRecord(string connectionStr, string userId, DeleteFinanceRecordDto deleteRequest)
+	{
+		using var connection = new MySqlConnection(connectionStr);
+		await connection.OpenAsync();
+		string table = "";
+		switch (deleteRequest.Type)
+		{
+			case "income":
+				table = "finance_income";
+			break;
+			case "expense":
+				table = "finance_expenses";
+			break;
+			default:
+				throw new ArgumentException("This is not valid record type.");
+		}
+		using var command = new MySqlCommand("""
+					Delete FROM @table where id = @record AND user_id = @user_id;
+					""", connection);
+		command.Parameters.AddWithValue("@user_id", userId);
+		command.Parameters.AddWithValue("@table", table);
+		command.Parameters.AddWithValue("@record", deleteRequest.Id);
 
+
+		await command.ExecuteNonQueryAsync();
+	}
 
 
 
