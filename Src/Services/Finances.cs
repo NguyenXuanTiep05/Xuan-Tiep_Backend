@@ -65,7 +65,7 @@ public static class Finances
 		await connection.OpenAsync();
 
 		using var command = new MySqlCommand("""
-				SELECT value, currency, description, date_ FROM finance_income
+				SELECT id, value, currency, description, date_ FROM finance_income
 				WHERE date_ >= DATE_FORMAT(CURDATE(), '%Y-%m-01')  AND date_ < DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')
 				AND user_id = @userId
 				ORDER BY date_ DESC;
@@ -80,10 +80,12 @@ public static class Finances
 		{
 			results.Add(new FinanceRecordResponseDto
 			{
+				RecordId = reader.GetInt32("id"),
 				Value = reader.GetDecimal("value"),
 				Currency = reader.GetString("currency"),
 				Description = reader.GetString("description"),
-				Date = reader.GetDateTime("date_")
+				Date = reader.GetDateTime("date_"),
+				Type = "income"
 			});
 		}
 
@@ -98,7 +100,7 @@ public static class Finances
 		await connection.OpenAsync();
 
 		using var command = new MySqlCommand("""
-				SELECT value, currency, description, date_ FROM finance_expenses
+				SELECT id, value, currency, description, date_ FROM finance_expenses
 				WHERE date_ >= DATE_FORMAT(CURDATE(), '%Y-%m-01')  AND date_ < DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')
 				AND user_id = @userId
 				ORDER BY date_ DESC;
@@ -113,10 +115,12 @@ public static class Finances
 		{
 			results.Add(new FinanceRecordResponseDto
 			{
+				RecordId = reader.GetInt32("id"),
 				Value = reader.GetDecimal("value"),
 				Currency = reader.GetString("currency"),
 				Description = reader.GetString("description"),
-				Date = reader.GetDateTime("date_")
+				Date = reader.GetDateTime("date_"),
+				Type = "expense"
 			});
 		}
 
@@ -146,59 +150,51 @@ public static class Finances
 
 
 
-	public static async Task CreateFinanceIncome(string connectionStr, string userId, CreateFinanceRecordDto incomeRequest)
+	public static async Task<long> CreateFinanceIncome(string connectionStr, string userId, CreateFinanceRecordDto incomeRequest)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
 		using var command = new MySqlCommand("""
 					INSERT INTO finance_income (value, currency, description, date_, user_id)
-					VALUES (@value, "CZK", @description, NOW(), @user_id)
+					VALUES (@value, "CZK", @description, NOW(), @user_id);
+					SELECT LAST_INSERT_ID();
 					""", connection);
 		command.Parameters.AddWithValue("@value", incomeRequest.Value);
 		command.Parameters.AddWithValue("@description", incomeRequest.Description);
 		command.Parameters.AddWithValue("@user_id", userId);
 
 
-		await command.ExecuteNonQueryAsync();
+		  return Convert.ToInt64(await command.ExecuteScalarAsync());
 	}
-	public static async Task CreateFinanceExpense(string connectionStr, string userId, CreateFinanceRecordDto incomeRequest)
-	{
-		using var connection = new MySqlConnection(connectionStr);
-		await connection.OpenAsync();
-		using var command = new MySqlCommand("""
-					INSERT INTO finance_expenses (value, currency, description, date_, user_id)
-					VALUES (@value, "CZK", @description, NOW(), @user_id)
-					""", connection);
-		command.Parameters.AddWithValue("@value", incomeRequest.Value);
-		command.Parameters.AddWithValue("@description", incomeRequest.Description);
-		command.Parameters.AddWithValue("@user_id", userId);
-
-
-		await command.ExecuteNonQueryAsync();
-	}
+	public static async Task<long> CreateFinanceExpense(string connectionStr, string userId, CreateFinanceRecordDto incomeRequest)
+    {
+        using var connection = new MySqlConnection(connectionStr);
+        await connection.OpenAsync();
+        using var command = new MySqlCommand("""
+                    INSERT INTO finance_expenses (value, currency, description, date_, user_id)
+                    VALUES (@value, "CZK", @description, NOW(), @user_id); SELECT LAST_INSERT_ID();
+                    """, connection);
+        command.Parameters.AddWithValue("@value", incomeRequest.Value);
+        command.Parameters.AddWithValue("@description", incomeRequest.Description);
+        command.Parameters.AddWithValue("@user_id", userId);
+          return Convert.ToInt64(await command.ExecuteScalarAsync());
+    }
 
 
 	public static async Task DeleteFinanceRecord(string connectionStr, string userId, DeleteFinanceRecordDto deleteRequest)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
-		string table = "";
-		switch (deleteRequest.Type)
-		{
-			case "income":
-				table = "finance_income";
-			break;
-			case "expense":
-				table = "finance_expenses";
-			break;
-			default:
-				throw new ArgumentException("This is not valid record type.");
-		}
-		using var command = new MySqlCommand("""
-					Delete FROM @table where id = @record AND user_id = @user_id;
+	    string table = deleteRequest.Type switch
+	    {
+	        "income" => "finance_income",
+	        "expense" => "finance_expenses",
+	        _ => throw new ArgumentException("This is not a valid record type.")
+	    };
+		using var command = new MySqlCommand($"""
+					Delete FROM {table} where id = @record AND user_id = @user_id;
 					""", connection);
 		command.Parameters.AddWithValue("@user_id", userId);
-		command.Parameters.AddWithValue("@table", table);
 		command.Parameters.AddWithValue("@record", deleteRequest.Id);
 
 

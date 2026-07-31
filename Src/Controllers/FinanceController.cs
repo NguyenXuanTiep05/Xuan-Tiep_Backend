@@ -106,8 +106,8 @@ public class FinanceController : ControllerBase
 	{
 		try
 		{
-			await Finances.CreateFinanceIncome(_connections.Default!, CurrentUserId, request);
-			return Ok(new { messege = "Income record has been created" });
+			long newId = await Finances.CreateFinanceIncome(_connections.Default!, CurrentUserId, request);
+			return Ok(new { message = newId });
 		}
 		catch (MySqlException ex)
 		{
@@ -120,8 +120,8 @@ public class FinanceController : ControllerBase
 	{
 		try
 		{
-			await Finances.CreateFinanceExpense(_connections.Default!, CurrentUserId, request);
-			return Ok(new { messege = "Expense record has been created" });
+			long newId = await Finances.CreateFinanceExpense(_connections.Default!, CurrentUserId, request);
+			return Ok(new { message = newId });
 		}
 		catch (MySqlException ex)
 		{
@@ -130,16 +130,17 @@ public class FinanceController : ControllerBase
 	}
 
 
-	[HttpDelete("del_finance_rec")]
+	[HttpPost("del_finance_rec")]
 	public async  Task<IActionResult> DeleteFinanceRecord([FromBody] DeleteFinanceRecordDto request)
 	{
 		try
 		{
 			await Finances.DeleteFinanceRecord(_connections.Default!, CurrentUserId, request);
-			return Ok(new { messege = "Record has been deleted." });
+			return Ok(new { message = "Record has been deleted." });
 		}
 		catch (MySqlException ex)
 		{
+			Console.WriteLine(ex.Message);
 			return StatusCode(500, new { message = "Database error.", detail = ex.Message });
 		}
 	}
