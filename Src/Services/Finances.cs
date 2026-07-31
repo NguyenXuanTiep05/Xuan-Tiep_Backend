@@ -83,7 +83,7 @@ public static class Finances
 				Value = reader.GetDecimal("value"),
 				Currency = reader.GetString("currency"),
 				Description = reader.GetString("description"),
-				Date = reader.GetDateOnly("date_")
+				Date = reader.GetDateTime("date_")
 			});
 		}
 
@@ -116,7 +116,7 @@ public static class Finances
 				Value = reader.GetDecimal("value"),
 				Currency = reader.GetString("currency"),
 				Description = reader.GetString("description"),
-				Date = reader.GetDateOnly("date_")
+				Date = reader.GetDateTime("date_")
 			});
 		}
 
@@ -152,7 +152,7 @@ public static class Finances
 		await connection.OpenAsync();
 		using var command = new MySqlCommand("""
 					INSERT INTO finance_income (value, currency, description, date_, user_id)
-					VALUES (@value, "CZK", @description, CURDATE(), @user_id)
+					VALUES (@value, "CZK", @description, NOW(), @user_id)
 					""", connection);
 		command.Parameters.AddWithValue("@value", incomeRequest.Value);
 		command.Parameters.AddWithValue("@description", incomeRequest.Description);
@@ -167,7 +167,7 @@ public static class Finances
 		await connection.OpenAsync();
 		using var command = new MySqlCommand("""
 					INSERT INTO finance_expenses (value, currency, description, date_, user_id)
-					VALUES (@value, "CZK", @description, CURDATE(), @user_id)
+					VALUES (@value, "CZK", @description, NOW(), @user_id)
 					""", connection);
 		command.Parameters.AddWithValue("@value", incomeRequest.Value);
 		command.Parameters.AddWithValue("@description", incomeRequest.Description);
