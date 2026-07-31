@@ -81,24 +81,28 @@ public class FinanceController : ControllerBase
 			return StatusCode(500, new { message = "Database error.", detail = ex.Message });
 		}
 	}
-	[HttpGet("overview")]
-	public async Task<IActionResult> GetFinanceOverviewAsync()
-	{
-		try
-		{
-			var resutls = await Finances.FinanceOverviewAsync(_connections.Default!, CurrentUserId);
-			if (resutls == null)
-			{
-				return NotFound(new { message = "There seems to be no records for you." });
-			}
-			return Ok(resutls);
-
-		}
-		catch (MySqlException ex)
-		{
-			return StatusCode(500, new { message = "Database error.", detail = ex.Message });
-		}
-	}
+[HttpGet("overview")]
+public async Task<IActionResult> GetFinanceOverviewAsync()
+{
+    try
+    {
+        var results = await Finances.FinanceOverviewAsync(_connections.Default!, CurrentUserId);
+        if (results == null)
+        {
+            return Ok(new FinanceOverviewResponseDto
+            {
+                Income = new List<FinanceRecordResponseDto>(),
+                Expenses = new List<FinanceRecordResponseDto>(),
+                Summary = new FinanceSummaryResponseDto { TotalIncome = 0, TotalExpenses = 0 }
+            });
+        }
+        return Ok(results);
+    }
+    catch (MySqlException ex)
+    {
+        return StatusCode(500, new { message = "Database error.", detail = ex.Message });
+    }
+}
 
 
 	[HttpPost("create_income")]
