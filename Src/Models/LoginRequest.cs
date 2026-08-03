@@ -2,7 +2,7 @@
 
 
 
-namespace Auth.Src.Models;
+namespace XuanTiepApi.Src.Models;
 
 public record LoginRequest
 {

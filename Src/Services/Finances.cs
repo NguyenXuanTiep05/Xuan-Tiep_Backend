@@ -2,9 +2,9 @@
 
 
 using MySqlConnector;
-using Auth.Src.Models.Finances;
+using XuanTiepApi.Src.Models.Finances;
 
-namespace Auth.Src.Services;
+namespace XuanTiepApi.Src.Services;
 
 
 

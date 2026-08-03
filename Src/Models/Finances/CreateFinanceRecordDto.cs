@@ -1,4 +1,4 @@
-namespace Auth.Src.Models.Finances;
+namespace XuanTiepApi.Src.Models.Finances;
 
 
 public record CreateFinanceRecordDto

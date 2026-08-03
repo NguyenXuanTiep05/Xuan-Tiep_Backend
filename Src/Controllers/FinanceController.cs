@@ -1,14 +1,14 @@
 
 using System.Security.Claims;
-using Auth.Src.Services;
-using Auth.Src.Models;
+using XuanTiepApi.Src.Services;
+using XuanTiepApi.Src.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MySqlConnector;
-using Auth.Src.Models.Finances;
+using XuanTiepApi.Src.Models.Finances;
 
-namespace Auth.src.Controllers;
+namespace XuanTiepApi.Src.Controllers;
 
 
 [Authorize]

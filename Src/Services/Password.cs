@@ -1,9 +1,9 @@
 using MySqlConnector;
 
-using Auth.Src.Models;
+using XuanTiepApi.Src.Models;
 
 
-namespace Auth.Src.Services;
+namespace XuanTiepApi.Src.Services;
 
 public static class Password
 {

@@ -1,6 +1,6 @@
-using Auth.Src.Models.Finances;
+using XuanTiepApi.Src.Models.Finances;
 
-namespace Auth.Src.Models.Finances;
+namespace XuanTiepApi.Src.Models.Finances;
 
 
 public record FinanceOverviewResponseDto

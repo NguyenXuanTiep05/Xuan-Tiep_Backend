@@ -8,16 +8,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using BCrypt.Net;
 
-using Auth.Src.Services;
-using Auth.Src.Models;
+using XuanTiepApi.Src.Services;
+using XuanTiepApi.Src.Models;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Auth.src.Controllers;
+namespace XuanTiepApi.Src.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("auth")]
-public class AuthController : ControllerBase
+public class AuthController  : ControllerBase
 {
 
 	private readonly Jwt _jwt;
