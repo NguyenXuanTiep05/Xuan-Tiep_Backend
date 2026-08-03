@@ -39,25 +39,17 @@ jobs:
       - name: Decode SSH key
         run: |
           printf '%s' "${{ secrets.SERVER_SSH_KEY }}" | base64 -d -i > deploy_key
-          chmod 644 deploy_key
+          chmod 600 deploy_key
       - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_TAILSCALE_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key_path: ./deploy_key
-          source: "./publish/*"
-          target: "/var/www/Auth/publish"
-          strip_components: 1
-          debug: true
-          timeout: 30s
-          command_timeout: 60s
+        run: |
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i deploy_key \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_TAILSCALE_IP }} \
+            "mkdir -p /var/www/Auth/publish"
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i deploy_key -r \
+            ./publish/* \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_TAILSCALE_IP }}:/var/www/Auth/publish/
       - name: Restart service
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_TAILSCALE_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key_path: ./deploy_key
-          script: |
-            sudo systemctl restart xuan-tiep-api
-            sudo systemctl status xuan-tiep-api --no-pager
+        run: |
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i deploy_key \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_TAILSCALE_IP }} \
+            "sudo systemctl restart xuan-tiep-api && sudo systemctl status xuan-tiep-api --no-pager"
