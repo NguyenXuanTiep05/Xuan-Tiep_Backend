@@ -49,6 +49,9 @@ jobs:
           source: "./publish/*"
           target: "/var/www/Auth/publish"
           strip_components: 1
+          debug: true
+          timeout: 30s
+          command_timeout: 60s
       - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
         with:
