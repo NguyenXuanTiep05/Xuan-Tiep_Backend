@@ -39,6 +39,11 @@ jobs:
         uses: tailscale/github-action@v3
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+      - name: Test connectivity to server
+        run: |
+          tailscale ping -c 3 ${{ secrets.SERVER_TAILSCALE_IP }}
+          echo "---"
+          nc -zv -w 5 ${{ secrets.SERVER_TAILSCALE_IP }} 22
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
