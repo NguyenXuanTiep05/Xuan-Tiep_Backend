@@ -52,4 +52,4 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i deploy_key \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_TAILSCALE_IP }} \
-            "sudo systemctl restart Auth && sudo systemctl status Auth --no-pager"
+            "sudo systemctl restart auth && sudo systemctl status auth --no-pager"
