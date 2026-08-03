@@ -39,11 +39,6 @@ jobs:
         uses: tailscale/github-action@v3
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-      - name: Test connectivity to server
-        run: |
-          tailscale ping -c 3 ${{ secrets.SERVER_TAILSCALE_IP }}
-          echo "---"
-          timeout 5 bash -c "cat < /dev/null > /dev/tcp/${{ secrets.SERVER_TAILSCALE_IP }}/22" && echo "Port 22 is OPEN" || echo "Port 22 is CLOSED or unreachable"
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -51,7 +46,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "./publish/*"
-          target: "/var/www/Auth"
+          target: "/var/www/Auth/publish"
           strip_components: 1
       - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
