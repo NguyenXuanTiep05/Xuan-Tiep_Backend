@@ -43,7 +43,7 @@ jobs:
         run: |
           tailscale ping -c 3 ${{ secrets.SERVER_TAILSCALE_IP }}
           echo "---"
-          nc -zv -w 5 ${{ secrets.SERVER_TAILSCALE_IP }} 22
+          timeout 5 bash -c "cat < /dev/null > /dev/tcp/${{ secrets.SERVER_TAILSCALE_IP }}/22" && echo "Port 22 is OPEN" || echo "Port 22 is CLOSED or unreachable"
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
