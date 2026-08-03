@@ -39,7 +39,7 @@ jobs:
       - name: Decode SSH key
         run: |
           printf '%s' "${{ secrets.SERVER_SSH_KEY }}" | base64 -d -i > deploy_key
-          chmod 600 deploy_key
+          chmod 644 deploy_key
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
