@@ -44,7 +44,7 @@ public class AuthController  : ControllerBase
 		{
 			HttpOnly = true,
 			Secure = true,
-			SameSite = SameSiteMode.Strict,
+			SameSite = SameSiteMode.Lax,
 			Expires = DateTimeOffset.UtcNow.AddHours(1)
 		});
 
@@ -59,7 +59,7 @@ public class AuthController  : ControllerBase
 		{
 			HttpOnly = true,
 			Secure = true,
-			SameSite = SameSiteMode.Strict
+			SameSite = SameSiteMode.Lax
 		});
 		return Ok(new { message = "Logged out" });
 	}
