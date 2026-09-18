@@ -3,6 +3,7 @@
 /publish
 .env
 .vscode
+appsettings.Development.json
 
 
 __azurite_db_*__.json
