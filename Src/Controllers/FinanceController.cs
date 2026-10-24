@@ -29,6 +29,7 @@ public class FinanceController : ControllerBase
 	[HttpGet("summary")]
 	public async Task<IActionResult> GetFinanceSummaryAsync()
 	{
+
 		try
 		{
 			var results = await Finances.FinanceSummaryAsync(_connections.Default!, CurrentUserId);

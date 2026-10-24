@@ -19,7 +19,6 @@ namespace XuanTiepApi.Src.Controllers;
 [Route("auth")]
 public class AuthController  : ControllerBase
 {
-
 	private readonly Jwt _jwt;
 	private readonly ConnectionsStrings _connStr;
 
@@ -39,28 +38,75 @@ public class AuthController  : ControllerBase
 	{
 		if (!Password.Compare(request, out int? id, out string? role)) { return NotFound(new { message = "Invalid Credentials" }); }
 
-		var token = GenerateJwtToken(request.Username, id ?? -1, role!);
+		var token = Authentication.GenerateJwtToken(request.Username, id ?? -1, role!, _jwt);
+		Authentication.SaveRefreshToken(_connStr.Default!, token,request.Username);
 		Response.Cookies.Append("token", token, new CookieOptions
 		{
 			HttpOnly = true,
 			Secure = true,
 			SameSite = SameSiteMode.Lax,
-			Expires = DateTimeOffset.UtcNow.AddHours(1)
+			Expires = DateTimeOffset.UtcNow.AddDays(30)
 		});
 
 		return Ok(new { message = "Logged in" });
 	}
-
-	[HttpPost("logout")]
+	[AllowAnonymous]
+	[HttpPost("refresh")]
 	[EnableRateLimiting("login")]
-	public IActionResult LogOut()
+	public IActionResult Refresh()
 	{
+		var oldToken = Request.Cookies["token"];
 		Response.Cookies.Delete("token", new CookieOptions
 		{
 			HttpOnly = true,
 			Secure = true,
 			SameSite = SameSiteMode.Lax
 		});
+		if (oldToken is null) 
+			return Unauthorized(new { message = "Login expired" });
+		try
+		{
+		    Users.GetUserData(_connStr.Default!, oldToken, out int? id, out string? role, out string? username);
+		    var newToken = Authentication.GenerateJwtToken(username!, id ?? -1, role!, _jwt);
+		    Authentication.UpdateRefreshToken(_connStr.Default!, oldToken, newToken);
+		    Response.Cookies.Append("token", newToken, new CookieOptions
+			{
+			    HttpOnly = true,
+			    Secure = true,
+			    SameSite = SameSiteMode.Lax,
+			    Expires = DateTimeOffset.UtcNow.AddDays(30)
+			});
+
+		}
+		catch
+		{
+		    return Unauthorized(new { message = "Login expired" });
+		}
+
+		return Ok(new { message = "Token refreshened" });
+
+	}
+
+	[HttpPost("logout")]
+	[EnableRateLimiting("login")]
+	public IActionResult LogOut()
+	{
+		var token = Request.Cookies["token"]!;
+		Response.Cookies.Delete("token", new CookieOptions
+		{
+			HttpOnly = true,
+			Secure = true,
+			SameSite = SameSiteMode.Lax
+		});
+
+		try
+		{
+			Authentication.DeleteRefreshToken(_connStr.Default!, token);
+		}
+		catch
+		{
+			return Unauthorized( new {message = "Login expired"} );
+		}
 		return Ok(new { message = "Logged out" });
 	}
 
@@ -68,30 +114,6 @@ public class AuthController  : ControllerBase
 	public IActionResult Verify()
 	{
 		return Ok(new { message = "Valid" });
-	}
-
-	private string GenerateJwtToken(string username, int id, string role)
-	{
-		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key!));
-		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-		var claims = new[]
-		{
-			new Claim(ClaimTypes.Name, username),
-			new Claim(ClaimTypes.Role, role),
-			new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-		};
-
-		var token = new JwtSecurityToken(
-			issuer: _jwt.Issuer,
-			audience: _jwt.Audience,
-			claims: claims,
-			expires: DateTime.UtcNow.AddHours(1),
-			signingCredentials: creds
-		);
-
-		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
 }

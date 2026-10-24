@@ -52,13 +52,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 {
                     context.Token = context.Request.Cookies["token"];
                     return Task.CompletedTask;
-                }
+                },
+				OnAuthenticationFailed = context =>
+				{
+				    if (context.Exception is SecurityTokenExpiredException)
+				    {
+				        context.Response.Headers.Append("Token-Expired", "true");
+				    }
+				    return Task.CompletedTask;
+				}
             };
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
+				ClockSkew = TimeSpan.Zero,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = builder.Configuration["Jwt:Issuer"],
                 ValidAudience = builder.Configuration["Jwt:Audience"],
@@ -74,7 +83,8 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:3000", "http://xuan-tiep.com", "https://xuan-tiep.com")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowCredentials()
+			  .WithExposedHeaders("Token-Expired");
     });
 });
 
