@@ -9,7 +9,7 @@ public static class Password
 {
     private static string _connectionString = "";
     public static void SetConn(string conn) { _connectionString = conn; }
-    public static bool Compare(LoginRequest lgr, out int? id, out string? role)
+    public static bool Compare(LoginRequest lgr, out Guid? id, out string? role)
     {
         using var connection = new MySqlConnection(_connectionString);
         connection.Open();
@@ -21,7 +21,7 @@ public static class Password
             string storedHash = reader.GetString("password");
 
             bool isValid = BCrypt.Net.BCrypt.Verify(lgr.Password, storedHash);
-            id = reader.GetInt32("id");
+            id = reader.GetGuid("id");
             role = reader.GetString("role");
             return isValid;
 

@@ -36,9 +36,9 @@ public class AuthController  : ControllerBase
 	[EnableRateLimiting("login")]
 	public IActionResult Login([FromBody] LoginRequest request)
 	{
-		if (!Password.Compare(request, out int? id, out string? role)) { return NotFound(new { message = "Invalid Credentials" }); }
+		if (!Password.Compare(request, out Guid? id, out string? role)) { return NotFound(new { message = "Invalid Credentials" }); }
 
-		var token = Authentication.GenerateJwtToken(request.Username, id ?? -1, role!, _jwt);
+		var token = Authentication.GenerateJwtToken(request.Username, id ?? Guid.Empty, role!, _jwt);
 		Authentication.SaveRefreshToken(_connStr.Default!, token,request.Username);
 		Response.Cookies.Append("token", token, new CookieOptions
 		{
@@ -66,8 +66,8 @@ public class AuthController  : ControllerBase
 			return Unauthorized(new { message = "Login expired" });
 		try
 		{
-		    Users.GetUserData(_connStr.Default!, oldToken, out int? id, out string? role, out string? username);
-		    var newToken = Authentication.GenerateJwtToken(username!, id ?? -1, role!, _jwt);
+		    Users.GetUserData(_connStr.Default!, oldToken, out Guid? id, out string? role, out string? username);
+		    var newToken = Authentication.GenerateJwtToken(username!, id ?? Guid.Empty, role!, _jwt);
 		    Authentication.UpdateRefreshToken(_connStr.Default!, oldToken, newToken);
 		    Response.Cookies.Append("token", newToken, new CookieOptions
 			{

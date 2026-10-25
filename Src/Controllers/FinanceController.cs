@@ -17,8 +17,8 @@ namespace XuanTiepApi.Src.Controllers;
 public class FinanceController : ControllerBase
 {
 	private readonly ConnectionsStrings _connections;
-	private string CurrentUserId =>
-			User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "-1";
+	private Guid CurrentUserId =>
+			Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : Guid.Empty;
 
 
 	public FinanceController(IOptions<ConnectionsStrings> connections)
@@ -111,7 +111,7 @@ public async Task<IActionResult> GetFinanceOverviewAsync()
 	{
 		try
 		{
-			long newId = await Finances.CreateFinanceIncome(_connections.Default!, CurrentUserId, request);
+			Guid newId = await Finances.CreateFinanceIncome(_connections.Default!, CurrentUserId, request);
 			return Ok(new { message = newId });
 		}
 		catch (MySqlException ex)
@@ -125,7 +125,7 @@ public async Task<IActionResult> GetFinanceOverviewAsync()
 	{
 		try
 		{
-			long newId = await Finances.CreateFinanceExpense(_connections.Default!, CurrentUserId, request);
+			Guid newId = await Finances.CreateFinanceExpense(_connections.Default!, CurrentUserId, request);
 			return Ok(new { message = newId });
 		}
 		catch (MySqlException ex)

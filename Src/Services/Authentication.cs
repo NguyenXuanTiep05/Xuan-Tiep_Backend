@@ -14,7 +14,7 @@ namespace XuanTiepApi.Src.Services;
 
 public static class Authentication
 {
-	public static string GenerateJwtToken(string username, int id, string role, Jwt jwt)
+	public static string GenerateJwtToken(string username, Guid id, string role, Jwt jwt)
 	{
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key!));
 		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

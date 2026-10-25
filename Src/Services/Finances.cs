@@ -10,7 +10,7 @@ namespace XuanTiepApi.Src.Services;
 
 public static class Finances
 {
-	public async static Task<FinanceSummaryResponseDto?> FinanceSummaryAsync(string connectionStr, string userId)
+	public async static Task<FinanceSummaryResponseDto?> FinanceSummaryAsync(string connectionStr, Guid userId)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
@@ -46,7 +46,7 @@ public static class Finances
 		{
 			results.Add(new FinanceSummaryResponseDto
 			{
-				UserId = reader.GetInt32("user_id"),
+				UserId = reader.GetGuid("user_id"),
 				Currency = reader.GetString("currency"),
 				TotalIncome = reader.GetDouble("total_income"),
 				TotalExpenses = reader.GetDouble("total_expenses"),
@@ -59,7 +59,7 @@ public static class Finances
 		return results[0];
 	}
 
-	public async static Task<List<FinanceRecordResponseDto>?> FinanceIncomeAsync(string connectionStr, string userId)
+	public async static Task<List<FinanceRecordResponseDto>?> FinanceIncomeAsync(string connectionStr, Guid userId)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
@@ -80,7 +80,7 @@ public static class Finances
 		{
 			results.Add(new FinanceRecordResponseDto
 			{
-				RecordId = reader.GetInt32("id"),
+				RecordId = reader.GetGuid("id"),
 				Value = reader.GetDecimal("value"),
 				Currency = reader.GetString("currency"),
 				Description = reader.GetString("description"),
@@ -94,7 +94,7 @@ public static class Finances
 		return results;
 
 	}
-	public async static Task<List<FinanceRecordResponseDto>?> FinanceExpensesAsync(string connectionStr, string userId)
+	public async static Task<List<FinanceRecordResponseDto>?> FinanceExpensesAsync(string connectionStr, Guid userId)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
@@ -115,7 +115,7 @@ public static class Finances
 		{
 			results.Add(new FinanceRecordResponseDto
 			{
-				RecordId = reader.GetInt32("id"),
+				RecordId = reader.GetGuid("id"),
 				Value = reader.GetDecimal("value"),
 				Currency = reader.GetString("currency"),
 				Description = reader.GetString("description"),
@@ -131,7 +131,7 @@ public static class Finances
 	}
 
 
-	public static async Task<FinanceOverviewResponseDto?> FinanceOverviewAsync(string connection, string userId)
+	public static async Task<FinanceOverviewResponseDto?> FinanceOverviewAsync(string connection, Guid userId)
 	{
 		var income = await FinanceIncomeAsync(connection, userId);
 		var expenses = await FinanceExpensesAsync(connection, userId);
@@ -150,38 +150,39 @@ public static class Finances
 
 
 
-	public static async Task<long> CreateFinanceIncome(string connectionStr, string userId, CreateFinanceRecordDto incomeRequest)
+	public static async Task<Guid> CreateFinanceIncome(string connectionStr, Guid userId, CreateFinanceRecordDto incomeRequest)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();
 		using var command = new MySqlCommand("""
 					INSERT INTO finance_income (value, currency, description, date_, user_id)
-					VALUES (@value, "CZK", @description, NOW(), @user_id);
-					SELECT LAST_INSERT_ID();
+					VALUES (@value, "CZK", @description, NOW(), @user_id)
+					RETURNING id;
 					""", connection);
 		command.Parameters.AddWithValue("@value", incomeRequest.Value);
 		command.Parameters.AddWithValue("@description", incomeRequest.Description);
 		command.Parameters.AddWithValue("@user_id", userId);
 
-
-		  return Convert.ToInt64(await command.ExecuteScalarAsync());
+		return Guid.Parse((await command.ExecuteScalarAsync())!.ToString()!);
 	}
-	public static async Task<long> CreateFinanceExpense(string connectionStr, string userId, CreateFinanceRecordDto incomeRequest)
+	public static async Task<Guid> CreateFinanceExpense(string connectionStr, Guid userId, CreateFinanceRecordDto incomeRequest)
     {
         using var connection = new MySqlConnection(connectionStr);
         await connection.OpenAsync();
         using var command = new MySqlCommand("""
                     INSERT INTO finance_expenses (value, currency, description, date_, user_id)
-                    VALUES (@value, "CZK", @description, NOW(), @user_id); SELECT LAST_INSERT_ID();
+                    VALUES (@value, "CZK", @description, NOW(), @user_id)
+                    RETURNING id;
                     """, connection);
         command.Parameters.AddWithValue("@value", incomeRequest.Value);
         command.Parameters.AddWithValue("@description", incomeRequest.Description);
         command.Parameters.AddWithValue("@user_id", userId);
-          return Convert.ToInt64(await command.ExecuteScalarAsync());
+
+        return Guid.Parse((await command.ExecuteScalarAsync())!.ToString()!);
     }
 
 
-	public static async Task DeleteFinanceRecord(string connectionStr, string userId, DeleteFinanceRecordDto deleteRequest)
+	public static async Task DeleteFinanceRecord(string connectionStr, Guid userId, DeleteFinanceRecordDto deleteRequest)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		await connection.OpenAsync();

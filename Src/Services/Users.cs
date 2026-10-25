@@ -14,7 +14,7 @@ namespace XuanTiepApi.Src.Services;
 
 public static class Users
 {
-	public static void GetUserData(string connectionStr,string token, out int? id, out string? role, out string? username)
+	public static void GetUserData(string connectionStr,string token, out Guid? id, out string? role, out string? username)
 	{
 		using var connection = new MySqlConnection(connectionStr);
 		connection.Open();
@@ -25,7 +25,7 @@ public static class Users
 		{
 		    throw new InvalidOperationException("User doesnt exists");
 		}
-		id = reader.GetInt32("id");
+		id = reader.GetGuid("id");
 		role = reader.GetString("role");
 		username = reader.GetString("username");
 
